@@ -92,7 +92,7 @@ def convert_asvz_time(time_str):
 def init_driver():
     options = webdriver.ChromeOptions()
     options.add_argument("--user-data-dir=chromeProfile")
-    if platform.system() == 'darwin':
+    if platform.system() == 'Darwin':
         driver = 'chromedriver'
     else:
         driver = 'chromedriver.exe'

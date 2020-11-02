@@ -70,13 +70,14 @@ def main(timeslot, facility):
     driver.get(entry_url)
     enroll_button = driver.find_element_by_id('btnRegister')
     html = enroll_button.get_attribute('innerHTML')
-    if 'ng-star-insterted' in html:
+    if 'ng-star-inserted' in html:
         print('Already enrolled')
     else:
         enroll_button.click()
         enroll_button = driver.find_element_by_id('btnRegister')
         html = enroll_button.get_attribute('innerHTML')
-        if 'ng-star-insterted' in html:
+        print(html)
+        if 'ng-star-inserted' in html:
             print('Succesfully Enrolled')
         else:
             print('Oops, something went wrong')

@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
-import time
+import platform
 
 FACILITIES = {'Höngg': '45598',
               'Irchel': '45577'}
@@ -91,8 +91,11 @@ def convert_asvz_time(time_str):
 def init_driver():
     options = webdriver.ChromeOptions()
     options.add_argument("--user-data-dir=chromeProfile")
-
-    driver = webdriver.Chrome(executable_path='chromedriver.exe', options=options)
+    if platform.system() == 'darwin':
+        driver = 'chromedriver'
+    else:
+        driver = 'chromedriver.exe'
+    driver = webdriver.Chrome(executable_path=driver, options=options)
     driver.implicitly_wait(5)
     return driver
 

@@ -15,11 +15,13 @@ FACILITIES = {'Höngg': '45598',
 SPORTS = {'Fitness': '122920'}
 
 
-def main(timeslot, facility='Irchel'):
+def main(timeslot, facility):
+    assert facility in FACILITIES, f'Facility {facility} not in Facilities.'
+
     timetable_request = f'https://asvz.ch/asvz_api/event_search?f[0]=facility:{FACILITIES[facility]}&f[1]=sport:{SPORTS["Fitness"]}&availability=1&_format=json'
     response = urllib.request.urlopen(timetable_request).read()
     data = json.loads(response)
-    now = datetime.datetime.now()
+
     if timeslot is None:
         print('No timeslot provided, enrolling for the next possible slot')
         entry = data['results'][0]
@@ -91,7 +93,7 @@ def init_driver():
     options.add_argument("--user-data-dir=chromeProfile")
 
     driver = webdriver.Chrome(executable_path='chromedriver.exe', options=options)
-    driver.implicitly_wait(1)
+    driver.implicitly_wait(5)
     return driver
 
 
@@ -101,10 +103,14 @@ def parse():
     parser.add_argument('--slot',
                         help='Datetime of your desired slot in "YYYY.MM.DD-HH:MM "')
 
+    parser.add_argument('--facility',
+                        help='ASVZ Facility to enroll ("Höngg" or "Irchel")',
+                        required=True)
+
     args = parser.parse_args()
     return args
 
 
 if __name__ == '__main__':
     parsed_args = parse()
-    main(timeslot=parsed_args.slot)
+    main(timeslot=parsed_args.slot, facility=parsed_args.facility)

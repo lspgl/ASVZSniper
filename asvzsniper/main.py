@@ -6,8 +6,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
-import platform
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
+from webdriver_manager.chrome import ChromeDriverManager
 
 FACILITIES = {'Höngg': '45598',
               'Irchel': '45577'}
@@ -44,10 +44,12 @@ def main(timeslot, facility):
         raise Exception(f'No more free slots at {timeslot}')
 
     driver = init_driver()
+    ignored_exceptions = (NoSuchElementException, StaleElementReferenceException,)
 
     login_xpath = """/html/body/app-root/div/div[2]/app-lesson-details/div/div/app-lessons-enrollment-button/button"""
     try:
         driver.get(entry_url)
+        WebDriverWait(driver, 5, ignored_exceptions=ignored_exceptions).until(EC.presence_of_element_located((By.XPATH, login_xpath)))
         login_button = driver.find_element_by_xpath(login_xpath)
         title = login_button.get_attribute('title')
         if title != 'Login':
@@ -68,12 +70,14 @@ def main(timeslot, facility):
 
     driver = init_driver()
     driver.get(entry_url)
+    WebDriverWait(driver, 5, ignored_exceptions=ignored_exceptions).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnRegister')))
     enroll_button = driver.find_element_by_id('btnRegister')
     html = enroll_button.get_attribute('innerHTML')
     if 'ng-star-inserted' in html:
         print('Already enrolled')
     else:
         enroll_button.click()
+        WebDriverWait(driver, 5, ignored_exceptions=ignored_exceptions).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnRegister')))
         enroll_button = driver.find_element_by_id('btnRegister')
         html = enroll_button.get_attribute('innerHTML')
         print(html)
@@ -92,11 +96,7 @@ def convert_asvz_time(time_str):
 def init_driver():
     options = webdriver.ChromeOptions()
     options.add_argument("--user-data-dir=chromeProfile")
-    if platform.system() == 'Darwin':
-        driver = 'chromedriver'
-    else:
-        driver = 'chromedriver.exe'
-    driver = webdriver.Chrome(executable_path=driver, options=options)
+    driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
     driver.implicitly_wait(5)
     return driver
 

@@ -65,7 +65,7 @@ def main(timeslot, facility):
 
     now = datetime.datetime.now()
     print(f'Waiting for enrollment timeslot at {oe_date}')
-    while now < oe_date - datetime.timedelta(seconds=3):
+    while now < oe_date - datetime.timedelta(seconds=5):
         now = datetime.datetime.now()
 
     driver = init_driver()
@@ -77,15 +77,19 @@ def main(timeslot, facility):
         print('Already enrolled')
     else:
         while True:
-            now = datetime.datetime.now()
-            print(f'Clicking at {now}')
-            WebDriverWait(driver, 5, ignored_exceptions=ignored_exceptions).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnRegister')))
-            enroll_button = driver.find_element_by_id('btnRegister')
-            enroll_button.click()
-            WebDriverWait(driver, 5, ignored_exceptions=ignored_exceptions).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnRegister')))
-            enroll_button = driver.find_element_by_id('btnRegister')
-            html = enroll_button.get_attribute('innerHTML')
-            cls = enroll_button.get_attribute('class').split()
+            try:
+                now = datetime.datetime.now()
+                WebDriverWait(driver, 5, ignored_exceptions=ignored_exceptions).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnRegister')))
+                enroll_button = driver.find_element_by_id('btnRegister')
+                enroll_button.click()
+                print(f'Clicked at {now}')
+                WebDriverWait(driver, 5, ignored_exceptions=ignored_exceptions).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnRegister')))
+                enroll_button = driver.find_element_by_id('btnRegister')
+                html = enroll_button.get_attribute('innerHTML')
+                cls = enroll_button.get_attribute('class').split()
+            except StaleElementReferenceException:
+                print('Lost the element, trying again')
+                continue
 
             if 'ng-star-inserted' in html:
                 print('Succesfully Enrolled')

@@ -65,7 +65,7 @@ def main(timeslot, facility):
 
     now = datetime.datetime.now()
     print(f'Waiting for enrollment timeslot at {oe_date}')
-    while now < oe_date:
+    while now < oe_date - datetime.timedelta(seconds=3):
         now = datetime.datetime.now()
 
     driver = init_driver()
@@ -76,15 +76,26 @@ def main(timeslot, facility):
     if 'ng-star-inserted' in html:
         print('Already enrolled')
     else:
-        enroll_button.click()
-        WebDriverWait(driver, 5, ignored_exceptions=ignored_exceptions).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnRegister')))
-        enroll_button = driver.find_element_by_id('btnRegister')
-        html = enroll_button.get_attribute('innerHTML')
-        print(html)
-        if 'ng-star-inserted' in html:
-            print('Succesfully Enrolled')
-        else:
-            print('Oops, something went wrong')
+        while True:
+            now = datetime.datetime.now()
+            print(f'Clicking at {now}')
+            WebDriverWait(driver, 5, ignored_exceptions=ignored_exceptions).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnRegister')))
+            enroll_button = driver.find_element_by_id('btnRegister')
+            enroll_button.click()
+            WebDriverWait(driver, 5, ignored_exceptions=ignored_exceptions).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#btnRegister')))
+            enroll_button = driver.find_element_by_id('btnRegister')
+            html = enroll_button.get_attribute('innerHTML')
+            cls = enroll_button.get_attribute('class').split()
+
+            if 'ng-star-inserted' in html:
+                print('Succesfully Enrolled')
+                break
+            elif 'disabled' in cls:
+                continue
+            else:
+                print('Oops, something went wrong')
+                print(html)
+                break
     driver.close()
 
 

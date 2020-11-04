@@ -75,7 +75,9 @@ def main(timeslot, facility):
     html = enroll_button.get_attribute('innerHTML')
     if 'ng-star-inserted' in html:
         print('Already enrolled')
+        success = True
     else:
+        success = False
         while True:
             try:
                 now = datetime.datetime.now()
@@ -93,14 +95,19 @@ def main(timeslot, facility):
 
             if 'ng-star-inserted' in html:
                 print('Succesfully Enrolled')
+                success = True
                 break
             elif 'disabled' in cls:
                 continue
-            else:
+            elif now > oe_date + datetime.timedelta(seconds=5):
                 print('Oops, something went wrong')
                 print(html)
                 break
-    driver.close()
+    if success:
+        driver.close()
+    else:
+        print('Something went wrong, keeping the page open for debugging purposes.')
+        driver.clos()
 
 
 def convert_asvz_time(time_str):
